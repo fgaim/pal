@@ -22,59 +22,61 @@ from pal import interface, runtime
 from pal.prompt import colored_object_prompt
 
 
-DATA_PATH = 'datasets/reasoning_about_colored_objects.json'
-OUTPUT_PATH = 'eval_results/reasoning_about_colored_objects.jsonl'
+DATA_PATH = "datasets/reasoning_about_colored_objects.json"
+OUTPUT_PATH = "eval_results/reasoning_about_colored_objects.jsonl"
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--append', action='store_true')
-parser.add_argument('--verbose', action='store_true')
+parser.add_argument("--append", action="store_true")
+parser.add_argument("--verbose", action="store_true")
 args = parser.parse_args()
 
-examples = json.load(open(DATA_PATH))['examples']
+examples = json.load(open(DATA_PATH))["examples"]
 
 itf = interface.ProgramInterface(
     runtime=runtime.ColorObjectRuntime(),
-    stop='\n\n\n',
-    get_answer_symbol='answer',
-    verbose=args.verbose
+    stop="\n\n\n",
+    get_answer_symbol="answer",
+    verbose=args.verbose,
 )
 
 if args.append:
     lines = open(OUTPUT_PATH).readlines()
     num_skip_exps = len(lines)
-    scores = [x['score'] for x in map(json.loads, lines)]
+    scores = [x["score"] for x in map(json.loads, lines)]
 else:
     num_skip_exps = 0
     scores = []
 
-with open(OUTPUT_PATH, 'a' if args.append else 'w') as f:
-    pbar = tqdm.tqdm(examples[num_skip_exps:], initial=num_skip_exps, total=len(examples))
+with open(OUTPUT_PATH, "a" if args.append else "w") as f:
+    pbar = tqdm.tqdm(
+        examples[num_skip_exps:], initial=num_skip_exps, total=len(examples)
+    )
     for x in pbar:
-        question = x['input']
+        question = x["input"]
         result = copy.copy(x)
         prompt = colored_object_prompt.COLOR_OBJECT_PROMPT
-        
+
         try:
             ans_str = itf.run(prompt.format(question=question))
             assert ans_str is not None
             if isinstance(ans_str, bool):
-                ans_str = 'yes' if ans_str else 'no'
+                ans_str = "yes" if ans_str else "no"
             else:
                 ans_str = str(ans_str)
-            result['answer_str'] = ans_str
-            score = x['target_scores'][ans_str]
+            result["answer_str"] = ans_str
+            score = x["target_scores"][ans_str]
         except:
-            result['answer_str'] = ''
+            result["answer_str"] = ""
             score = 0
 
         scores.append(score)
-        
-        result['score'] = score
-        result['generation'] = itf.history
-        f.write(json.dumps(result) + '\n')
-        
+
+        result["score"] = score
+        result["generation"] = itf.history
+        f.write(json.dumps(result) + "\n")
+
         itf.clear_history()
         f.flush()
 
-print(f'Accuracy - {sum(scores) / len(scores)}')
+print(f"Accuracy - {sum(scores) / len(scores)}")

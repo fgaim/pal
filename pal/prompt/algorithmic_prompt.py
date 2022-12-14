@@ -13,7 +13,8 @@
 # limitations under the License.
 
 
-REPEAT_COPY_PROMPT = '''
+REPEAT_COPY_PROMPT = (
+    '''
 Q: say java twice and data once, and then repeat all of this three times.
 
 # solution using Python:
@@ -77,10 +78,13 @@ def solution():
 Q: {question}
 
 # solution using Python:
-'''.strip() + '\n\n'
+'''.strip()
+    + "\n\n"
+)
 
 
-OBJECT_COUNTING_PROMPTING = '''
+OBJECT_COUNTING_PROMPTING = (
+    '''
 Q: I have a drum, a flute, a clarinet, a violin, four accordions, a piano, a trombone, and a trumpet. How many musical instruments do I have?
 
 # solution using Python:
@@ -167,4 +171,6 @@ def solution():
 Q: {question}
 
 # solution using Python:
-'''.strip() + '\n\n'
+'''.strip()
+    + "\n\n"
+)

@@ -1,10 +1,12 @@
+import os
+import json
 from importlib import reload
-import pandas as pd
-from tqdm import tqdm
 from contextlib import contextmanager
 import signal
 from glob import glob
-import os
+
+import pandas as pd
+from tqdm import tqdm
 
 # from https://stackoverflow.com/questions/492519/timeout-on-a-function-call
 @contextmanager
@@ -19,15 +21,16 @@ def timeout(duration):
     finally:
         signal.alarm(0)
 
+
 def read_json(path):
-    import json
     rows = []
     with open(path, "r") as f:
         for line in f:
             rows.append(json.loads(line))
-    
+
     task_df = pd.DataFrame(rows)
     return task_df
+
 
 def evaluate_code_prompt(path):
     data = read_json(path)
@@ -46,7 +49,8 @@ def evaluate_code_prompt(path):
 
         try:
             import temp_result
-            question = row['question'].split("Q: ")[-1].split("#")[0].strip()
+
+            question = row["question"].split("Q: ")[-1].split("#")[0].strip()
             reload(temp_result)
             correct_solution = str(row["answer"])
             print()
@@ -62,13 +66,12 @@ def evaluate_code_prompt(path):
             data.loc[i, "is_correct"] = is_corr
             data.loc[i, "generated_result"] = result
             data.loc[i, "question"] = question
-             
+
         except Exception as e:
             continue
         if not (isinstance(result, int) or isinstance(result, float)):
             continue
         # compare float values
-
 
     print(f"Accuracy = {num_corr / len(data):.2%} ({num_corr}/{len(data)})")
     data.to_json("gsm_quco_results.jsonl", orient="records", lines=True)
@@ -89,8 +92,7 @@ def fix_function(soln):
         soln_lines[-1] = "    return " + soln_lines[-1]
 
     return "\n".join(soln_lines)
-    
-    
+
 
 def check_corr(result: float, correct_solution: float, tol: float = 1e-3):
     if result.strip() == correct_solution.strip():
@@ -108,24 +110,28 @@ def evaluate_text_prompt(path):
     num_corr = 0
     for i, row in tqdm(data.iterrows(), total=len(data)):
         try:
-            question = row['question'].split("Q: ")[-1].split("A:")[0].strip()
-            generated_soln = row["generated_answer"].strip().split("The answer is ")[-1].strip()
+            question = row["question"].split("Q: ")[-1].split("A:")[0].strip()
+            generated_soln = (
+                row["generated_answer"].strip().split("The answer is ")[-1].strip()
+            )
         except:
             generated_soln = -100000
-        correct_solution =str(row["answer"])
+        correct_solution = str(row["answer"])
         is_corr = check_corr(generated_soln, correct_solution)
         if not is_corr:
-            print(f"result: {row['generated_answer']}, correct_solution: {correct_solution}, is_corr: {is_corr}")
+            print(
+                f"result: {row['generated_answer']}, correct_solution: {correct_solution}, is_corr: {is_corr}"
+            )
 
         num_corr += int(is_corr)
         data.loc[i, "is_correct"] = is_corr
         data.loc[i, "generated_result"] = generated_soln
         data.loc[i, "question"] = question
-        
 
     print(f"Accuracy = {num_corr / len(data):.2%} ({num_corr}/{len(data)})")
     data.to_json("gsm_cot_results.jsonl", orient="records", lines=True)
     return num_corr / len(data)
+
 
 if __name__ == "__main__":
     import argparse

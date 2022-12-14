@@ -13,7 +13,8 @@
 # limitations under the License.
 
 
-MATH_PROMPT = '''
+MATH_PROMPT = (
+    '''
 Q: Olivia has $23. She bought five bagels for $3 each. How much money does she have left?
 
 # solution in Python:
@@ -162,4 +163,6 @@ def solution():
 Q: {question}
 
 # solution in Python:
-'''.strip() + '\n\n\n'
+'''.strip()
+    + "\n\n\n"
+)

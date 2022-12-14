@@ -13,7 +13,8 @@
 # limitations under the License.
 
 
-DATE_UNDERSTANDING_PROMPT = """
+DATE_UNDERSTANDING_PROMPT = (
+    """
 # Q: 2015 is coming in 36 hours. What is the date one week from today in MM/DD/YYYY?
 # If 2015 is coming in 36 hours, then today is 36 hours before.
 today = datetime(2015, 1, 1) - relativedelta(hours=36)
@@ -61,4 +62,6 @@ yesterday = today - relativedelta(days=1)
 yesterday.strftime('%m/%d/%Y')
 
 # Q: {question}
-""".strip() + '\n'
+""".strip()
+    + "\n"
+)

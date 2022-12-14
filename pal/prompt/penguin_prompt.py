@@ -13,7 +13,8 @@
 # limitations under the License.
 
 
-PENGUIN_PROMPT = '''
+PENGUIN_PROMPT = (
+    '''
 """
 Q: Here is a table where the first line is a header and each subsequent line is a penguin:
 name, age, height (cm), weight (kg) 
@@ -100,4 +101,6 @@ answer = second_penguin_name
 """
 {question}
 """
-'''.strip() + '\n'
+'''.strip()
+    + "\n"
+)
